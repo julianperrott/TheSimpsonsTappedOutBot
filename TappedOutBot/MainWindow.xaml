@@ -1,0 +1,19 @@
+﻿<Window x:Class="TappedOutBot.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TappedOutBot"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"></RowDefinition>
+            <RowDefinition Height="40"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Button Grid.Row="0" Content="Tap" HorizontalAlignment="Left"  VerticalAlignment="Top" Click="Tap_Click" />
+        <Button Grid.Row="1" Content="Screenshot" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Screenshot_Click" />
+        <Image x:Name="screenshot" Grid.Row="2" Source="C:\Users\julian\Desktop\screenshot.png"></Image>
+    </Grid>
+</Window>
