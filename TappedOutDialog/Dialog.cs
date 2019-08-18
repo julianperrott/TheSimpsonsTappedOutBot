@@ -1,23 +1,28 @@
 ﻿using AForge;
 using AForge.Imaging;
+using AForge.Imaging.Filters;
 using AForge.Math.Geometry;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 
 namespace TappedOutDialog
 {
     public class Dialog
     {
-
-        public Bitmap Process(Bitmap image)
+        public List<List<System.Drawing.Point>> FindQuadrilaterals(Bitmap image)
         {
+            var result = new List<List<System.Drawing.Point>>();
+
             // locating objects
             var blobCounter = new BlobCounter(image);
 
             blobCounter.FilterBlobs = true;
-            blobCounter.MinHeight = 5;
-            blobCounter.MinWidth = 5;
+            blobCounter.MinHeight = 20;
+            blobCounter.MinWidth = 20;
 
             blobCounter.ProcessImage(image);
             Blob[] blobs = blobCounter.GetObjectsInformation();
@@ -27,31 +32,51 @@ namespace TappedOutDialog
 
             foreach (var blob in blobs)
             {
-                List<IntPoint> edgePoints = blobCounter.GetBlobsEdgePoints(blob);
-                List<IntPoint> cornerPoints;
+                var edgePoints = blobCounter.GetBlobsEdgePoints(blob);
 
                 // use the shape checker to extract the corner points
-                if (shapeChecker.IsQuadrilateral(edgePoints, out cornerPoints))
+                if (shapeChecker.IsQuadrilateral(edgePoints, out List<IntPoint> cornerPoints))
                 {
-                    // only do things if the corners form a rectangle
-                    //if (shapeChecker.CheckPolygonSubType(cornerPoints) == PolygonSubType.Rectangle)
-                    //{
-                        // here i use the graphics class to draw an overlay, but you
-                        // could also just use the cornerPoints list to calculate your
-                        // x, y, width, height values.
-                        var points = new List<System.Drawing.Point>();
-                        foreach (var point in cornerPoints)
-                        {
-                            points.Add(new System.Drawing.Point(point.X, point.Y));
-                        }
-
-                        Graphics g = Graphics.FromImage(image);
-                        g.DrawPolygon(new Pen(Color.Red, 5.0f), points.ToArray());
-
-                    //}
+                    var points = cornerPoints.Select(point => new System.Drawing.Point(point.X, point.Y)).ToList();
+                    result.Add(points);
+                    Graphics g = Graphics.FromImage(image);
+                    g.DrawPolygon(new Pen(Color.Red, 1.0f), points.ToArray());
                 }
             }
-            return image;
+
+            return result;
+        }
+
+        public static Bitmap FilterImage(Bitmap originalBitmap)
+        {
+            var bitmap = new Bitmap(originalBitmap);
+
+            var imagem = bitmap.Clone(new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+            var colorFilter = new ColorFiltering();
+            colorFilter.FillColor = new RGB(255, 255, 255);
+            colorFilter.Red = colorFilter.Green = colorFilter.Blue = new IntRange(0, 40);
+            colorFilter.ApplyInPlace(bitmap);
+            bitmap = new FiltersSequence(colorFilter, new Invert(), new Erosion()).Apply(imagem);
+            return bitmap;
+        }
+
+        public static List<Bitmap> ExtractDialogs(Bitmap bitmap, List<List<System.Drawing.Point>> cornerPoints)
+        {
+            return cornerPoints.Select(points => CopyFromBitmap(bitmap, points)).ToList();
+        }
+
+        public static Bitmap CopyFromBitmap(Bitmap originalBitmap, List<System.Drawing.Point> points)
+        {
+            var bitmap = new Bitmap(originalBitmap);
+
+            var minX = points.Select(p => p.X).Min();
+            var maxX = points.Select(p => p.X).Max();
+
+            var minY = points.Select(p => p.Y).Min();
+            var maxY = points.Select(p => p.Y).Max();
+
+            var bmpImage = new Bitmap(bitmap);
+            return bmpImage.Clone(new Rectangle(minX, minY, maxX - minX, maxY - minY), bmpImage.PixelFormat);
         }
     }
 }

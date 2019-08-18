@@ -13,7 +13,8 @@
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <Button Grid.Row="0" Content="Tap" HorizontalAlignment="Left"  VerticalAlignment="Top" Click="Tap_Click" />
-        <Button Grid.Row="1" Content="Screenshot" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Screenshot_Click" />
+        <Button Grid.Row="0" Content="Screenshot" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Screenshot_Click" Margin="100 0 0 0"/>
+        <Button Grid.Row="0" Content="Screenshot Processor" HorizontalAlignment="Left" VerticalAlignment="Top" Click="ScreenshotProcessor_Click" Margin="200 0 0 0" />
         <Image x:Name="screenshot" Grid.Row="2" Source="C:\Users\julian\Desktop\screenshot.png"></Image>
     </Grid>
 </Window>

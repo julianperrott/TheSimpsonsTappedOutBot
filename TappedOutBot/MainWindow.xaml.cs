@@ -2,10 +2,12 @@
 using AForge;
 using AForge.Imaging;
 using AForge.Imaging.Filters;
+using OCR;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,6 +34,8 @@ namespace TappedOutBot
         public MainWindow()
         {
             InitializeComponent();
+
+            TesseractTestBase.Test();
         }
 
         public Device Emulator
@@ -56,31 +60,36 @@ namespace TappedOutBot
 
         private void Screenshot_Click(object sender, RoutedEventArgs e)
         {
+            var filename = @"C:\Users\julian\Desktop\TappedOutScreenShots\screenshot_" + Guid.NewGuid().ToString();
             var screenshot = Emulator.Screenshot();
-            var filteredScreenshot = FilterImage(screenshot);
-            var processedScreenshot = new Dialog().Process(filteredScreenshot);
+            screenshot.Save(filename + "_0.png");
 
-            var filename = @"C:\Users\julian\Desktop\screenshot" + Guid.NewGuid() + ".png";
-            processedScreenshot.Save(filename);
+            var filteredScreenshot = Dialog.FilterImage((Bitmap)screenshot);
+            filteredScreenshot.Save(filename + "_1.png");
 
-            var bi = new BitmapImage();
-            bi.BeginInit();
-            bi.UriSource = new Uri(filename, UriKind.RelativeOrAbsolute);
-            bi.EndInit();
-            this.screenshot.Source = bi;
+            new Dialog().FindQuadrilaterals(filteredScreenshot);
+            filteredScreenshot.Save(filename + "_2.png");
+
+            this.screenshot.Source = ToBitmapImage(filteredScreenshot);
         }
-
-        private static Bitmap FilterImage(System.Drawing.Image screenshot)
+        public static BitmapImage ToBitmapImage(Bitmap bitmap)
         {
-            var bitmap = (Bitmap)screenshot;
-            var imagem = bitmap.Clone(new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-            var colorFilter = new ColorFiltering();
-            colorFilter.FillColor = new RGB(255, 255, 255);
-            colorFilter.Red = colorFilter.Green = colorFilter.Blue = new IntRange(0, 40);
-            colorFilter.ApplyInPlace(bitmap);
-            bitmap = new FiltersSequence(colorFilter, new Invert(), new Erosion()).Apply(imagem);
-            return bitmap;
+            var ms = new MemoryStream();
+            bitmap.Save(ms, ImageFormat.Bmp);
+            byte[] buffer = ms.GetBuffer();
+            var bufferPasser = new MemoryStream(buffer);
+
+            var bitmapImage = new BitmapImage();
+            bitmapImage.BeginInit();
+            bitmapImage.StreamSource = bufferPasser;
+            bitmapImage.EndInit();
+
+            return bitmapImage;
         }
 
+        private void ScreenshotProcessor_Click(object sender, RoutedEventArgs e)
+        {
+            new ScreenshotProcessor().ShowDialog();
+        }
     }
 }
