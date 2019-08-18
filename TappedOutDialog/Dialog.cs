@@ -8,8 +8,10 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using OCR;
+using TappedOut.Dialog;
 
-namespace TappedOutDialog
+namespace TappedOut.Dialog
 {
     public class Dialog
     {
@@ -77,6 +79,63 @@ namespace TappedOutDialog
 
             var bmpImage = new Bitmap(bitmap);
             return bmpImage.Clone(new Rectangle(minX, minY, maxX - minX, maxY - minY), bmpImage.PixelFormat);
+        }
+
+        public static void PopulateDialogInfo(Screenshot screenshot)
+        {
+            var dialog = new Dialog();
+            var cornerPoints = dialog.FindQuadrilaterals(screenshot.ProcessedBitmap);
+            //var extractedDialogs = Dialog.ExtractDialogs(screenshot.Bitmap, cornerPoints);
+
+            screenshot.Dialogs = cornerPoints.Select(cornerPoints =>
+             {
+                 var dialogBitmap = Dialog.CopyFromBitmap((Bitmap)screenshot.Bitmap, cornerPoints);
+                 var minX = cornerPoints.Select(p => p.X).Min();
+                 var maxX = cornerPoints.Select(p => p.X).Max();
+                 var minY = cornerPoints.Select(p => p.Y).Min();
+                 var maxY = cornerPoints.Select(p => p.Y).Max();
+
+                 var text = string.Empty;
+                 var isCenterDialog = false;
+
+                 if (minX < 100 || minY < 100)
+                 {
+                     text = "Too close to left or top side of window.";
+                 }
+                 else if (maxX > screenshot.Bitmap.Width - 100 || maxY > screenshot.Bitmap.Height - 100)
+                 {
+                     text = "Too close to bottom or right hand side of window.";
+                 }
+                 else
+                 {
+                     text = ExtractText(dialogBitmap);
+                     isCenterDialog = true;
+                 }
+
+                 return new DialogInfo
+                 {
+                     Bitmap = dialogBitmap,
+                     Name = text,
+                     Width = dialogBitmap.Width,
+                     Height = dialogBitmap.Height,
+                     IsCenterDialog = isCenterDialog,
+                     MinX = minX,
+                     MaxX=maxX,
+                     MinY=minY,
+                     MaxY=maxY
+                 };
+             }).ToList();
+        }
+
+        private static string ExtractText(Bitmap bmp)
+        {
+            // create filter
+            var resizeBilinear = new ResizeBilinear(bmp.Width * 2, bmp.Height * 2);
+            var greyScale = new Grayscale(0.2125, 0.7154, 0.0721);
+
+            var biggerImage = new FiltersSequence(resizeBilinear).Apply(bmp);
+
+            return string.Join(", ", TesseractTestBase.ExtractText(biggerImage));
         }
     }
 }

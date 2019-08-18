@@ -1,9 +1,9 @@
-﻿<Window x:Class="TappedOutBot.ScreenshotProcessor"
+﻿<Window x:Class="TappedOut.Bot.ScreenshotProcessor"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:TappedOutBot"
+        xmlns:local="clr-namespace:TappedOut.Bot"
         mc:Ignorable="d"
         Title="ScreenshotProcessor" Height="450" Width="800">
     <Grid>
@@ -22,10 +22,10 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <StackPanel>
-                <Image DataContext="{Binding SelectedScreenshot}" Source="{Binding Image }" />
-                <Image DataContext="{Binding SelectedScreenshot}" Source="{Binding ProcessedImage }" />
+                <Image Source="{Binding Image }" />
+                <Image Source="{Binding ProcessedImage }" />
             </StackPanel>
-            <ListView Grid.Column="1" x:Name="Dialogs" DataContext="{Binding SelectedScreenshot}" ItemsSource="{Binding Dialogs }">
+            <ListView Grid.Column="1" x:Name="DialogControl" ItemsSource="{Binding Dialogs}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Border CornerRadius="6" BorderBrush="Gray" Background="LightGray" BorderThickness="2" DockPanel.Dock="Top">

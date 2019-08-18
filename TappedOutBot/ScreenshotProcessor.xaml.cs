@@ -13,15 +13,13 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.ComponentModel;
 using System.Drawing;
-using TappedOutDialog;
 using OCR;
 using AForge.Imaging.Filters;
+using TappedOut.Dialog;
+using TappedOut.Bot.ViewModels;
 
-namespace TappedOutBot
+namespace TappedOut.Bot
 {
-    /// <summary>
-    /// Interaction logic for ScreenshotProcessor.xaml
-    /// </summary>
     public partial class ScreenshotProcessor : Window, INotifyPropertyChanged
     {
         public List<Screenshot> Screenshots;
@@ -29,40 +27,34 @@ namespace TappedOutBot
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public Screenshot SelectedScreenshot
+        public BitmapImage Image
         {
             get
             {
-                var screenshot = this.Screenshots[selectedIndex];
-
-                if (screenshot.Dialogs == null)
-                {
-                    var dialog = new Dialog();
-                    var cornerPoints = dialog.FindQuadrilaterals(screenshot.ProcessedBitmap);
-                    var extractedDialogs = Dialog.ExtractDialogs(screenshot.Bitmap, cornerPoints);
-
-                    screenshot.Dialogs = extractedDialogs.Select(bmp => new DialogInfo
-                    {
-                        Image = MainWindow.ToBitmapImage(bmp),
-                        Name = ExtractText(bmp),
-                        Width = bmp.Width,
-                        Height = bmp.Height
-                    }).ToList();
-                }
-
-                return screenshot;
+                return Screenshots[selectedIndex].Bitmap.ToBitmapImage();
             }
         }
 
-        private static string ExtractText(Bitmap bmp)
+        public BitmapImage ProcessedImage
         {
-            // create filter
-            var resizeBilinear = new ResizeBilinear(bmp.Width*2, bmp.Height*2);
-            var greyScale = new Grayscale(0.2125, 0.7154, 0.0721);
+            get
+            {
+                return Screenshots[selectedIndex].ProcessedBitmap.ToBitmapImage();
+            }
+        }
 
-            var biggerImage = new FiltersSequence(resizeBilinear).Apply(bmp);
+        public List<DialogInfoViewModel> Dialogs
+        {
+            get
+            {
+                var screenshot = Screenshots[selectedIndex];
+                if (screenshot.Dialogs == null)
+                {
+                    Dialog.Dialog.PopulateDialogInfo(screenshot);
+                }
 
-            return string.Join(", ", TesseractTestBase.ExtractText(biggerImage));
+                return screenshot.Dialogs.Select(d => DialogInfoViewModel.Create(d)).ToList();
+            }
         }
 
         public ScreenshotProcessor()
@@ -70,16 +62,15 @@ namespace TappedOutBot
             InitializeComponent();
             this.DataContext = this;
 
-
             Screenshots = Directory.GetFiles(@"C:\Users\julian\Desktop\TappedOutScreenShots", "*_0.png")
                 .ToList()
                 .Select(f =>
                 {
+                    
                     var image =System.Drawing.Image.FromFile(f);
-                    var processedBitmap = Dialog.FilterImage((Bitmap)image);
+                    var processedBitmap = Dialog.Dialog.FilterImage((Bitmap)image);
                     
                     return new Screenshot { Filename = f.Split('\\').ToList().Last(), Bitmap = (Bitmap)image, ProcessedBitmap = processedBitmap};
-
                 })
                 .ToList();
 

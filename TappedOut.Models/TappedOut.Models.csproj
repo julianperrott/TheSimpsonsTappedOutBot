@@ -5,8 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AForge.Imaging" Version="2.2.5" />
     <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="PresentationCore">
+      <HintPath>C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\3.0.0-preview8-28405-07\ref\netcoreapp3.0\PresentationCore.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

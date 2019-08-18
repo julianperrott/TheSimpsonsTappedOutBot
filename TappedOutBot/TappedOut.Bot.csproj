@@ -9,7 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ADB\ADB.csproj" />
     <ProjectReference Include="..\OCR\OCR.csproj" />
-    <ProjectReference Include="..\TappedOutDialog\TappedOutDialog.csproj" />
+    <ProjectReference Include="..\TappedOutDialog\TappedOut.Dialog.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
-﻿<Application x:Class="TappedOutBot.App"
+﻿<Application x:Class="TappedOut.Bot.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:TappedOutBot"
+             xmlns:local="clr-namespace:TappedOut.Bot"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

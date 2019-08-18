@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29209.62
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TappedOutBot", "TappedOutBot\TappedOutBot.csproj", "{862E0EAB-A131-4467-9F94-71FA28DBB62E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TappedOut.Bot", "TappedOutBot\TappedOut.Bot.csproj", "{862E0EAB-A131-4467-9F94-71FA28DBB62E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ADB", "ADB\ADB.csproj", "{13C33513-0EA6-40A3-8C9E-9840F879CAB0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TappedOutDialog", "TappedOutDialog\TappedOutDialog.csproj", "{A407B8CA-DC0B-4C75-B068-FDC5BBFDB6DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TappedOut.Dialog", "TappedOutDialog\TappedOut.Dialog.csproj", "{A407B8CA-DC0B-4C75-B068-FDC5BBFDB6DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OCR", "OCR\OCR.csproj", "{36E2CBBE-8B2E-47F0-A549-4B8C0086321D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OCR", "OCR\OCR.csproj", "{36E2CBBE-8B2E-47F0-A549-4B8C0086321D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

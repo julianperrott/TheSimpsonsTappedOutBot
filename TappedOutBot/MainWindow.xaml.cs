@@ -1,35 +1,23 @@
 ﻿using ADB;
-using AForge;
-using AForge.Imaging;
-using AForge.Imaging.Filters;
 using OCR;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
+using System.Timers;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using TappedOutDialog;
+using TappedOut.Dialog;
 
-namespace TappedOutBot
+namespace TappedOut.Bot
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        Device emulator;
+        private Device emulator;
 
         public MainWindow()
         {
@@ -55,7 +43,64 @@ namespace TappedOutBot
         {
             Emulator.Tap(Device.TapPosition.Character);
             System.Threading.Thread.Sleep(100);
-            Emulator.Tap(Device.TapPosition.Center);
+
+            // create Screenshot object
+            var image = Emulator.Screenshot();
+            SaveScreenShot(image);
+            var filteredImage = Dialog.Dialog.FilterImage((Bitmap)image);
+            var screenshot = new Screenshot { Bitmap = (Bitmap)image, ProcessedBitmap = filteredImage };
+            Dialog.Dialog.PopulateDialogInfo(screenshot);
+
+            // are there any centre dialogs.
+            var centreDialogs = screenshot.Dialogs.Where(d => d.IsCenterDialog).ToList();
+            if (!centreDialogs.Any())
+            {
+                // tap centre to collect XP & $
+                Emulator.Tap(Device.TapPosition.Center);
+                return;
+            }
+
+            var dialog = ChooseDialog(centreDialogs);
+
+            // click on the right middle
+            var x = dialog.MaxX - 20;
+            var y = dialog.MaxY - (dialog.Height / 2);
+            Emulator.Tap(x, y);
+        }
+
+        System.Timers.Timer timer;
+
+        private void Timer_Click(object sender, RoutedEventArgs e)
+        {
+            timer = new System.Timers.Timer(2000);
+            // Hook up the Elapsed event for the timer. 
+            timer.Elapsed += OnTimedEvent;
+            timer.AutoReset = true;
+            timer.Enabled = true;
+        }
+
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            timer.Enabled = false;
+            System.Diagnostics.Debug.WriteLine("Timer fired" + DateTime.Now.ToLongTimeString());
+            Tap_Click(null, null);
+            timer.Enabled = true;
+        }
+
+        private DialogInfo ChooseDialog(List<DialogInfo> centreDialogs)
+        {
+            return centreDialogs.Where(x => x.Name.Contains("XP") || x.Name.Contains("Reward") || x.Name.Contains("Time")).FirstOrDefault();
+        }
+
+        private void SaveScreenShot(System.Drawing.Image image)
+        {
+            var filename = @"C:\Users\julian\Desktop\TappedOutScreenShots\screenshot_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".png";
+            while (File.Exists(filename))
+            {
+                System.Threading.Thread.Sleep(1000);
+                filename = @"C:\Users\julian\Desktop\TappedOutScreenShots\screenshot_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".png";
+            }
+            image.Save(filename);
         }
 
         private void Screenshot_Click(object sender, RoutedEventArgs e)
@@ -64,27 +109,15 @@ namespace TappedOutBot
             var screenshot = Emulator.Screenshot();
             screenshot.Save(filename + "_0.png");
 
-            var filteredScreenshot = Dialog.FilterImage((Bitmap)screenshot);
+            var filteredScreenshot = Dialog.Dialog.FilterImage((Bitmap)screenshot);
             filteredScreenshot.Save(filename + "_1.png");
 
-            new Dialog().FindQuadrilaterals(filteredScreenshot);
+            new Dialog.Dialog().FindQuadrilaterals(filteredScreenshot);
             filteredScreenshot.Save(filename + "_2.png");
 
-            this.screenshot.Source = ToBitmapImage(filteredScreenshot);
-        }
-        public static BitmapImage ToBitmapImage(Bitmap bitmap)
-        {
-            var ms = new MemoryStream();
-            bitmap.Save(ms, ImageFormat.Bmp);
-            byte[] buffer = ms.GetBuffer();
-            var bufferPasser = new MemoryStream(buffer);
+            //BitmapImage x
 
-            var bitmapImage = new BitmapImage();
-            bitmapImage.BeginInit();
-            bitmapImage.StreamSource = bufferPasser;
-            bitmapImage.EndInit();
-
-            return bitmapImage;
+            //this.screenshot.Source = ToBitmapImage(filteredScreenshot);
         }
 
         private void ScreenshotProcessor_Click(object sender, RoutedEventArgs e)
